@@ -27,7 +27,10 @@ docker compose up --build
 ```
 
 Test it:
+
 ```bash
+# bash / Git Bash / WSL
+
 # Health check (no auth)
 curl http://localhost:8000/health
 
@@ -38,7 +41,8 @@ curl -X POST http://localhost:8000/ask \
   -d '{"question": "Hello"}'
 
 # No key → 401
-curl -X POST http://localhost:8000/ask -H "Content-Type: application/json" \
+curl -X POST http://localhost:8000/ask \
+  -H "Content-Type: application/json" \
   -d '{"question": "Hello"}'
 
 # Exceed rate limit → 429 (run 11+ times)
@@ -48,6 +52,41 @@ for i in $(seq 1 12); do
     -H "Content-Type: application/json" \
     -d '{"question": "test"}'
 done
+```
+
+```powershell
+# PowerShell
+
+# Health check (no auth)
+Invoke-RestMethod http://localhost:8000/health
+
+# Ask endpoint (requires API key)
+Invoke-RestMethod `
+  -Method POST `
+  -Uri "http://localhost:8000/ask" `
+  -Headers @{ "X-API-Key" = "dev-key-change-me-in-production"; "Content-Type" = "application/json" } `
+  -Body '{"question": "Hello"}'
+
+# No key → 401
+Invoke-RestMethod `
+  -Method POST `
+  -Uri "http://localhost:8000/ask" `
+  -Headers @{ "Content-Type" = "application/json" } `
+  -Body '{"question": "Hello"}'
+
+# Exceed rate limit → 429 (run 11+ times)
+1..12 | ForEach-Object {
+  try {
+    Invoke-RestMethod `
+      -Method POST `
+      -Uri "http://localhost:8000/ask" `
+      -Headers @{ "X-API-Key" = "dev-key-change-me-in-production"; "Content-Type" = "application/json" } `
+      -Body '{"question": "test"}' | Out-Null
+    Write-Host "200"
+  } catch {
+    Write-Host $_.Exception.Response.StatusCode.value__
+  }
+}
 ```
 
 ---
@@ -84,6 +123,35 @@ npm install
 npm run dev
 ```
 
+### Health Check
+```bash
+# bash / Git Bash / WSL
+curl https://2a202600228day12ha-tang-cloudvadeployment-production.up.railway.app/health
+# Expected: {"status": "ok"}
+```
+
+```powershell
+# PowerShell
+Invoke-RestMethod https://2a202600228day12ha-tang-cloudvadeployment-production.up.railway.app/health
+```
+
+### API Test (with authentication)
+```bash
+# bash / Git Bash / WSL
+curl -X POST https://2a202600228day12ha-tang-cloudvadeployment-production.up.railway.app/api/agent/chat \
+  -H "X-API-Key: dev-key-local" \
+  -H "Content-Type: application/json" \
+  -d '{"session_id": "test", "message": "Hello"}'
+```
+
+```powershell
+# PowerShell
+Invoke-RestMethod `
+  -Method POST `
+  -Uri "https://2a202600228day12ha-tang-cloudvadeployment-production.up.railway.app/api/agent/chat" `
+  -Headers @{ "X-API-Key" = "dev-key-local"; "Content-Type" = "application/json" } `
+  -Body '{"session_id": "test", "message": "Hello"}'
+```
 ---
 
 ### Key Differences
