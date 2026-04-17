@@ -32,5 +32,7 @@ env/
 Thumbs.db
 
 # ── Docker volumes (local dev) ─────────────────────��──────
-data/
 volumes/
+
+# Exception: agent mock data is required source code
+!project-to-deploy/src/backend/agent/data/
