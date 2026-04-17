@@ -1,0 +1,33 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: src/backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - APP_NAME=Vinmec AI Backend
+    env_file:
+      - src/backend/.env          # copy from src/backend/.env.example and fill in secrets
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: src/frontend/vinmec-patientguide
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8000
+        VITE_API_KEY: dev-key-local
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
