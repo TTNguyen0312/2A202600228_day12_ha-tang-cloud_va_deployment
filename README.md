@@ -1,5 +1,104 @@
 # Day 12 — Deployment: Đưa Agent Lên Cloud
 
+---
+
+## Running the Projects
+
+This repo contains two runnable projects. They serve different purposes — read the difference before running.
+
+---
+
+### 1. `deliverable/` — Lab Submission (Mock LLM, no API key needed)
+
+A standalone production-ready backend demonstrating all Day 12 concepts: auth, rate limiting, cost guard, health checks, graceful shutdown. Uses a mock LLM so it runs without any API key.
+
+```bash
+cd deliverable
+cp .env.example .env          # no secrets needed, defaults work
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+Or with Docker:
+```bash
+cd deliverable
+cp .env.example .env
+docker compose up --build
+```
+
+Test it:
+```bash
+# Health check (no auth)
+curl http://localhost:8000/health
+
+# Ask endpoint (requires API key)
+curl -X POST http://localhost:8000/ask \
+  -H "X-API-Key: dev-key-change-me-in-production" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Hello"}'
+
+# No key → 401
+curl -X POST http://localhost:8000/ask -H "Content-Type: application/json" \
+  -d '{"question": "Hello"}'
+
+# Exceed rate limit → 429 (run 11+ times)
+for i in $(seq 1 12); do
+  curl -s -o /dev/null -w "%{http_code}\n" -X POST http://localhost:8000/ask \
+    -H "X-API-Key: dev-key-change-me-in-production" \
+    -H "Content-Type: application/json" \
+    -d '{"question": "test"}'
+done
+```
+
+---
+
+### 2. `project-to-deploy/` — Real Vinmec App (Frontend + Backend, needs OpenAI key)
+
+The full MedRoute AI healthcare triage application. Frontend (React + Vite) and backend (FastAPI + LangGraph) are separate services that communicate via REST API.
+
+**Run both together locally:**
+```bash
+cd project-to-deploy
+# Make sure src/backend/.env exists with your OPENAI_API_KEY
+docker compose up --build
+```
+
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:5173 |
+| Backend | http://localhost:8000 |
+
+**Run backend only:**
+```bash
+cd project-to-deploy/src/backend
+pip install -r requirements.txt
+cp .env.example .env   # fill in OPENAI_API_KEY
+uvicorn src.backend.main:app --reload
+```
+
+**Run frontend only:**
+```bash
+cd project-to-deploy/src/frontend/vinmec-patientguide
+npm install
+# Make sure .env has VITE_API_BASE_URL and VITE_API_KEY
+npm run dev
+```
+
+---
+
+### Key Differences
+
+| | `deliverable/` | `project-to-deploy/` |
+|--|---------------|----------------------|
+| Purpose | Lab submission demonstrating Day 12 patterns | Real full-stack healthcare triage app |
+| LLM | Mock (no API key) | Real OpenAI via LangGraph agent |
+| Frontend | None | React + Vite on port 5173 |
+| Backend | FastAPI + mock LLM | FastAPI + LangGraph + OpenAI |
+| Deployment | Single Railway service | Two Railway services (frontend + backend) |
+| API key needed | No | Yes — `OPENAI_API_KEY` required |
+
+---
+
 > **AICB-P1 · VinUniversity 2026**  
 > Repository thực hành đi kèm bài giảng Day 12.  
 > Mỗi phần có ví dụ **cơ bản** (hiểu concept) và **chuyên sâu** (production-ready).
