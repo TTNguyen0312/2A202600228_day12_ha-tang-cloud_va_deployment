@@ -2,14 +2,17 @@
 
 ## Public URL
 Frontend: https://reasonable-solace-production-4d3d.up.railway.app/
-Backend: https://2a202600228day12ha-tang-cloudvadeployment-production.up.railway.app/
+Backend (App's flow - no /ask route): https://2a202600228day12ha-tang-cloudvadeployment-production.up.railway.app/
+Backend (Test's flow - with /ask route): https://2a202600228day12ha-tang-cloudvadeployment-production-335e.up.railway.app/
 ## Platform
 Railway
 
 ## Test Commands
-### 1. `deliverable/` — Lab Submission (Mock LLM, no API key needed)
+### 1. `deliverable/` - Lab Submission (Mock LLM, no API key needed)
 
 A standalone production-ready backend demonstrating all Day 12 concepts: auth, rate limiting, cost guard, health checks, graceful shutdown. Uses a mock LLM so it runs without any API key.
+
+To test the real working LLM, move to the next session
 
 ```bash
 cd deliverable
@@ -90,7 +93,7 @@ Invoke-RestMethod `
 
 ---
 
-### 2. `project-to-deploy/` — Real Vinmec App (Frontend + Backend, needs OpenAI key)
+### 2. `project-to-deploy/` - Real Vinmec App (Frontend + Backend, needs OpenAI key)
 
 The full MedRoute AI healthcare triage application. Frontend (React + Vite) and backend (FastAPI + LangGraph) are separate services that communicate via REST API.
 
@@ -121,6 +124,8 @@ npm install
 # Make sure .env has VITE_API_BASE_URL and VITE_API_KEY
 npm run dev
 ```
+
+**These two parts are also deployed, the next test goes on the deployed url**:
 
 ### Health Check
 ```bash
