@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend — lint & import check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project-to-deploy/src/backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install ruff fastapi pydantic python-dotenv
+
+      - name: Lint (ruff)
+        run: ruff check . --ignore E501
+
+  frontend:
+    name: Frontend — install & build check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: project-to-deploy/src/frontend/vinmec-patientguide
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: project-to-deploy/src/frontend/vinmec-patientguide/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: https://placeholder.up.railway.app
+          VITE_API_KEY: ci-placeholder-key
